@@ -86,6 +86,9 @@ public class InstanceInfo {
     public static final int DEFAULT_COUNTRY_ID = 1; // US
 
     // The (fixed) instanceId for this instanceInfo. This should be unique within the scope of the appName.
+    /**
+     * 一个服务名称会对应多个服务实例，每个服务实例的服务名称是一样的，但是实例Id是不同的
+     */
     private volatile String instanceId;
 
     private volatile String appName;

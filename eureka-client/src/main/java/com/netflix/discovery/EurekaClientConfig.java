@@ -339,6 +339,7 @@ public interface EurekaClientConfig {
     boolean shouldLogDeltaDiff();
 
     /**
+     * 是否支持增量赋值
      * Indicates whether the eureka client should disable fetching of delta and
      * should rather resort to getting the full registry information.
      *

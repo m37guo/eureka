@@ -125,7 +125,7 @@ public class PeerEurekaNodes {
 
     /**
      * Resolve peer URLs.
-     *
+     * 解析配置文件中其他的 eureka server 的 url 地址
      * @return peer URLs with node's own URL filtered out
      */
     protected List<String> resolvePeerUrls() {

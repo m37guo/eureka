@@ -64,6 +64,7 @@ public interface EurekaInstanceConfig {
     String getAppGroupName();
 
     /**
+     * 应用初始化后是否开启
      * Indicates whether the instance should be enabled for taking traffic as
      * soon as it is registered with eureka. Sometimes the application might
      * need to do some pre-processing before it is ready to take traffic.
@@ -108,6 +109,7 @@ public interface EurekaInstanceConfig {
     boolean getSecurePortEnabled();
 
     /**
+     * 租约续租频率，单位是秒，应用通过不断按照该频率发送心跳给 Eureka Server 以达到续约的作用。
      * Indicates how often (in seconds) the eureka client needs to send
      * heartbeats to eureka server to indicate that it is still alive. If the
      * heartbeats are not received for the period specified in

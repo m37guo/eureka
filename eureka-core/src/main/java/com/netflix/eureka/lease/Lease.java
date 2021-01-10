@@ -39,6 +39,10 @@ public class Lease<T> {
     public static final int DEFAULT_DURATION_IN_SECS = 90;
 
     private T holder;
+
+    /**
+     * 下线时间
+     */
     private long evictionTimestamp;
     private long registrationTimestamp;
     private long serviceUpTimestamp;
@@ -108,6 +112,13 @@ public class Lease<T> {
      * @param additionalLeaseMs any additional lease time to add to the lease evaluation in ms.
      */
     public boolean isExpired(long additionalLeaseMs) {
+        // 当前时间 > lastUpdateTimestamp（上次心跳的发生时间 + duration，详情看 renew()） + duration + additionalLeaseMs（补偿时间）
+        // duration 默认是 90s
+        // 假设补偿时间为0，假设当前时间比上次心跳时间的时间差了超过90s，说明90s内都没有更新过心跳，此时就认为那个服务实例可能宕机了
+        // 但是因为 renew() 方法中的bug，所以 renew() 中 给 lastUpdateTimestamp 也加了个duration
+        // 所以导致 Expired time = duration * 2，也就是180s没有心跳，才会认为服务实例宕机
+        // 再加上失效多级缓存，只读缓存需要30s才能同步，服务实例30s才会重新抓取增量注册表
+        // 所以一个服务实例挂掉了后，可能要过四五分钟，才能让其他的服务感知到
         return (evictionTimestamp > 0 || System.currentTimeMillis() > (lastUpdateTimestamp + duration + additionalLeaseMs));
     }
 

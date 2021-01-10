@@ -68,6 +68,10 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
             .getLogger(DefaultEurekaServerConfig.class);
     private static final DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory
             .getInstance();
+
+    /**
+     * 要加载的eureka server配置文件的名字，配置文件的默认名称是 eureka-server
+     */
     private static final DynamicStringProperty EUREKA_PROPS_FILE = DynamicPropertyFactory
             .getInstance().getStringProperty("eureka.server.props",
                     "eureka-server");
@@ -103,8 +107,10 @@ public class DefaultEurekaServerConfig implements EurekaServerConfig {
         ConfigurationManager.getConfigInstance().setProperty(
                 ARCHAIUS_DEPLOYMENT_ENVIRONMENT, env);
 
+        // 默认就是 eureka-server
         String eurekaPropsFile = EUREKA_PROPS_FILE.get();
         try {
+            // 将 eureka-server.properties 中的配置加载到 ConfigurationManager 中
             // ConfigurationManager
             // .loadPropertiesFromResources(eurekaPropsFile);
             ConfigurationManager

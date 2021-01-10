@@ -129,6 +129,7 @@ public class ResponseCacheImpl implements ResponseCache {
         long responseCacheUpdateIntervalMs = serverConfig.getResponseCacheUpdateIntervalMs();
         this.readWriteCacheMap =
                 CacheBuilder.newBuilder().initialCapacity(1000)
+                        // 默认写入180s后自动过期
                         .expireAfterWrite(serverConfig.getResponseCacheAutoExpirationInSeconds(), TimeUnit.SECONDS)
                         .removalListener(new RemovalListener<Key, Value>() {
                             @Override
@@ -153,6 +154,7 @@ public class ResponseCacheImpl implements ResponseCache {
                         });
 
         if (shouldUseReadOnlyResponseCache) {
+            // 默认每隔30s执行一个定时调度的线程任务，
             timer.schedule(getCacheUpdateTask(),
                     new Date(((System.currentTimeMillis() / responseCacheUpdateIntervalMs) * responseCacheUpdateIntervalMs)
                             + responseCacheUpdateIntervalMs),
@@ -166,6 +168,9 @@ public class ResponseCacheImpl implements ResponseCache {
         }
     }
 
+    /**
+     * 对 readOnlyCacheMap 和 readWriteCacheMap 中的数据进行一个比对，如果两块数据不一致，那么就将 readWriteCacheMap 中的数据放到 readOnlyCacheMap 中
+     */
     private TimerTask getCacheUpdateTask() {
         return new TimerTask() {
             @Override
@@ -204,7 +209,7 @@ public class ResponseCacheImpl implements ResponseCache {
      * @return payload which contains information about the applications.
      */
     public String get(final Key key) {
-        return get(key, shouldUseReadOnlyResponseCache);
+        return get(key, shouldUseReadOnlyResponseCache);                // shouldUseReadOnlyResponseCache 默认为true
     }
 
     @VisibleForTesting
@@ -338,6 +343,12 @@ public class ResponseCacheImpl implements ResponseCache {
     }
 
     /**
+     * 多级缓存机制：用了2个map来做了两级缓存
+     *      只读缓存 map
+     *      读写缓存 map
+     *  先从只读缓存中去读，如果没有的化，会从读写缓存中读，如果读写缓存中也没有的化，会从eureka server的注册表中去读取
+     *
+     *  从注册表中取出的所有的Applications，会被 ServerCodecs 序列化，然后返回并放入读写缓存中，然后将结果放入只读缓存中
      * Get the payload in both compressed and uncompressed form.
      */
     @VisibleForTesting

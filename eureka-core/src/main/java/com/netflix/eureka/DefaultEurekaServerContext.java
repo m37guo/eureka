@@ -61,6 +61,8 @@ public class DefaultEurekaServerContext implements EurekaServerContext {
     @Override
     public void initialize() throws Exception {
         logger.info("Initializing ...");
+        // 将 Eureka Server 节点启动起来
+        //      更新一下 Eureka Server 集群的信息，让当前的 Eureka Server 感知到所有的其他的 Eureka Server.然后搞一个定时调度任务，每隔一定的时间，更新 Eureka Server 集群的信息。
         peerEurekaNodes.start();
         registry.init(peerEurekaNodes);
         logger.info("Initialized");

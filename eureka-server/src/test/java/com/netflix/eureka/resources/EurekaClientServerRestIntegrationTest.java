@@ -24,6 +24,7 @@ import com.netflix.eureka.cluster.protocol.ReplicationList;
 import com.netflix.eureka.cluster.protocol.ReplicationListResponse;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl.Action;
 import com.netflix.eureka.transport.JerseyReplicationClient;
+import com.sun.jersey.server.impl.application.WebApplicationContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
@@ -42,6 +43,8 @@ import static org.mockito.Mockito.when;
  * Test REST layer of client/server communication. This test instantiates fully configured Jersey container,
  * which is essential to verifying content encoding/decoding with different format types (JSON vs XML, compressed vs
  * uncompressed).
+ *
+ * 在这个测试类中，会将 Eureka 注册中心启动起来，然后模拟 Eureka 客户端去发送各种请求到 Eureka 注册中心去测试各种功能
  *
  * @author Tomasz Bak
  */
@@ -232,6 +235,8 @@ public class EurekaClientServerRestIntegrationTest {
     }
 
     private static void startServer() throws Exception {
+
+        /*
         File warFile = findWar();
 
         server = new Server(8080);
@@ -241,6 +246,19 @@ public class EurekaClientServerRestIntegrationTest {
         webapp.setWar(warFile.getAbsolutePath());
         server.setHandler(webapp);
 
+        server.start();
+
+        eurekaServiceUrl = "http://localhost:8080/v2";
+         */
+
+
+        server = new Server(8080);
+
+        WebAppContext webAppCtx = new WebAppContext(new File("eureka-server/src/main/webapp").getAbsolutePath(), "/");
+        webAppCtx.setDescriptor(new File("eureka-server/src/main/web/app/WEB-INF/web.xml").getAbsolutePath());
+        webAppCtx.setResourceBase(new File("eureka-server/src/main/resources").getAbsolutePath());
+        webAppCtx.setClassLoader(Thread.currentThread().getContextClassLoader());
+        server.setHandler(webAppCtx);
         server.start();
 
         eurekaServiceUrl = "http://localhost:8080/v2";

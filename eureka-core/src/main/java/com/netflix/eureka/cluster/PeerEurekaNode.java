@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
  * The <code>PeerEurekaNode</code> represents a peer node to which information
  * should be shared from this node.
  *
+ * 一个 PeerEurekaNode 代表了一个可以从本节点共享信息的Peer Node
+ *
  * <p>
  * This class handles replicating all update operations like
  * <em>Register,Renew,Cancel,Expiration and Status Changes</em> to the eureka
@@ -137,6 +139,8 @@ public class PeerEurekaNode {
                 taskId("register", info),
                 new InstanceReplicationTask(targetHost, Action.Register, info, null, true) {
                     public EurekaHttpResponse<Void> execute() {
+                        // 这里同步注册请求给其他eureka server时，一定会将请求头中的 isReplication 设置为true
+                        // 详情可以参考 JerseyReplicationClient#addExtraHeaders()
                         return replicationClient.register(info);
                     }
                 },
