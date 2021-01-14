@@ -171,6 +171,8 @@ public class ApplicationInfoManager {
         }
 
         InstanceStatus prev = instanceInfo.setStatus(next);
+        // prev 是 instanceInfo 之前的状态
+        // prev != null，说明 instanceInfo 的前后状态发生了变化
         if (prev != null) {
             for (StatusChangeListener listener : listeners.values()) {
                 try {

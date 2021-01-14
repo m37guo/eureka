@@ -979,8 +979,12 @@ public class DiscoveryClient implements EurekaClient {
         return true;
     }
 
+    /**
+     * 更新缓存的（lastRemoteInstanceStatus）当前应用实例在 Eureka-Server 的状态。
+     */
     private synchronized void updateInstanceRemoteStatus() {
         // Determine this instance's status for this app and set to UNKNOWN if not found
+        // 从注册信息中获取当前应用在 Eureka-Server 的状态
         InstanceInfo.InstanceStatus currentRemoteInstanceStatus = null;
         if (instanceInfo.getAppName() != null) {
             Application app = getApplication(instanceInfo.getAppName());
@@ -995,6 +999,8 @@ public class DiscoveryClient implements EurekaClient {
             currentRemoteInstanceStatus = InstanceInfo.InstanceStatus.UNKNOWN;
         }
 
+
+        // 对比本地缓存和最新的的当前应用实例在 Eureka-Server 的状态，若不同，更新本地缓存( 注意，只更新该缓存变量，不更新本地当前应用实例的状态( instanceInfo.status ) )，触发 StatusChangeEvent 事件，事件监听器执行。
         // Notify if status changed
         if (lastRemoteInstanceStatus != currentRemoteInstanceStatus) {
             onRemoteStatusChanged(lastRemoteInstanceStatus, currentRemoteInstanceStatus);
@@ -1560,6 +1566,8 @@ public class DiscoveryClient implements EurekaClient {
     }
 
     /**
+     * 根据配置 eureka.shouldFilterOnlyUpInstances = true ( 默认值 ：true ) 过滤只保留状态为开启( UP )的应用实例，并随机打乱应用实例顺序。
+     * 打乱后，实现调用应用服务的随机性
      * Gets the <em>applications</em> after filtering the applications for
      * instances with only UP states and shuffling them.
      *

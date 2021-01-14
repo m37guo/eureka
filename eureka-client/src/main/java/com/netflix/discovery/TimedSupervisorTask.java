@@ -60,7 +60,9 @@ public class TimedSupervisorTask extends TimerTask {
         try {
             future = executor.submit(task);
             threadPoolLevelGauge.set((long) executor.getActiveCount());
+            // 等待任务 执行完成 或 超时
             future.get(timeoutMillis, TimeUnit.MILLISECONDS);  // block until done or timeout
+            // 设置 下一次任务执行频率
             delay.set(timeoutMillis);
             threadPoolLevelGauge.set((long) executor.getActiveCount());
         } catch (TimeoutException e) {
@@ -68,6 +70,7 @@ public class TimedSupervisorTask extends TimerTask {
             timeoutCounter.increment();
 
             long currentDelay = delay.get();
+            // 设置 下一次任务执行频率
             long newDelay = Math.min(maxDelay, currentDelay * 2);
             delay.compareAndSet(currentDelay, newDelay);
 
@@ -88,10 +91,12 @@ public class TimedSupervisorTask extends TimerTask {
 
             throwableCounter.increment();
         } finally {
+            // 取消 未完成的任务
             if (future != null) {
                 future.cancel(true);
             }
 
+            // 调度 下次任务
             if (!scheduler.isShutdown()) {
                 scheduler.schedule(this, delay.get(), TimeUnit.MILLISECONDS);
             }

@@ -1139,6 +1139,7 @@ public class InstanceInfo {
         if (this.status != status) {
             InstanceStatus prev = this.status;
             this.status = status;
+            // 状态发生变更，也需要设置为 dirty，这样 client 就会重新注册
             setIsDirty();
             return prev;
         }

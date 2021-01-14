@@ -105,7 +105,16 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
     private final AtomicReference<EvictionTask> evictionTaskRef = new AtomicReference<EvictionTask>();
 
     protected String[] allKnownRemoteRegions = EMPTY_STR_ARRAY;
+
+    /**
+     * 期望最小每分钟续租次数
+     * 等于 expectedNumberOfRenewsPerMin * 0.85
+     */
     protected volatile int numberOfRenewsPerMinThreshold;
+    /**
+     * 期望最大每分钟续租次数
+     * 等于服务实例数量 * 2
+     */
     protected volatile int expectedNumberOfRenewsPerMin;
 
     protected final EurekaServerConfig serverConfig;
@@ -202,7 +211,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             if (gMap == null) {
                 final ConcurrentHashMap<String, Lease<InstanceInfo>> gNewMap = new ConcurrentHashMap<String, Lease<InstanceInfo>>();
                 gMap = registry.putIfAbsent(registrant.getAppName(), gNewMap);
-                if (gMap == null) {
+                if (gMap == null) {             // 添加 应用 成功
                     gMap = gNewMap;
                 }
             }
@@ -217,6 +226,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
 
                 // this is a > instead of a >= because if the timestamps are equal, we still take the remote transmitted
                 // InstanceInfo instead of the server local copy.
+                // 如果 Server 注册的 InstanceInfo 的数据不一致时间大，则Client请求的InstanceInfo无效
                 if (existingLastDirtyTimestamp > registrationLastDirtyTimestamp) {
                     logger.warn("There is an existing lease and the existing lease's dirty timestamp {} is greater" +
                             " than the one that is being registered {}", existingLastDirtyTimestamp, registrationLastDirtyTimestamp);
@@ -1269,7 +1279,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
         return overriddenInstanceStatusMap.size();
     }
 
-    /* visible for testing */ class EvictionTask extends TimerTask {
+    class EvictionTask extends TimerTask {
 
         private final AtomicLong lastExecutionNanosRef = new AtomicLong(0l);
 

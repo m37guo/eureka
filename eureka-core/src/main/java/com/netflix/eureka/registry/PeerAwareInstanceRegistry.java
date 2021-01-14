@@ -24,6 +24,7 @@ import com.netflix.eureka.resources.ASGResource;
 import java.util.List;
 
 /**
+ * 服务实例信息的注册表
  * @author Tomasz Bak
  */
 public interface PeerAwareInstanceRegistry extends InstanceRegistry {

@@ -562,6 +562,7 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
             synchronized (lock) {
                 // Update threshold only if the threshold is greater than the
                 // current expected threshold of if the self preservation is disabled.
+                // 当 自我保护机制开启 且 服务实例每分钟最大心跳数 < 期望最小每分钟续约次数，那就不重新计算，否则自动保护机制会在每次这个定时任务触发执行后失效
                 if ((count * 2) > (serverConfig.getRenewalPercentThreshold() * numberOfRenewsPerMinThreshold)
                         || (!this.isSelfPreservationModeEnabled())) {
                     this.expectedNumberOfRenewsPerMin = count * 2;
